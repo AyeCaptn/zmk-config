@@ -1,0 +1,662 @@
+/*
+ * Copyright (c) 2024 Thiago Alves
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+// WARN:
+// If you're open this file on a text editor, make sure your editor is not
+// "wrapping" long lines, is capable of rendering Unicode characters, and it's
+// using a font with symbols from the Nerd Fonts fonts
+// (https://www.nerdfonts.com).
+
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/backlight.h>
+#include <dt-bindings/zmk/bt.h>
+#include <dt-bindings/zmk/ext_power.h>
+#include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/mouse.h>
+#include <dt-bindings/zmk/outputs.h>
+#include <dt-bindings/zmk/rgb.h>
+
+#include "specialkeys.dtsi"
+#include "homerowmods.dtsi"
+#include "autoshift.dtsi"
+#include "keymap_drawer.dtsi"
+
+// Layers definitions
+// -----------------------------------------------------------------------------
+// The next define macros represent each layer my layout has, so I can reference
+// them by name instead of numbers.
+//
+// NOTE: Check the README.md file for a detailed explanation of my layers
+//       system, but notice that all "base layers" are defined before the
+//       adjustment ones, this way, if we switch to a different layout, you can
+//       still toggle all the other layers in the layout.
+
+// Current main layout: QWERTY
+#define L_QWT 0
+// Alternative layout I'm planning to explore: COLEMAK
+#define L_CMK 1
+// Navigation layer
+#define L_NAV 2
+// Numbers layer
+#define L_NUM 3
+// Symbols layer
+#define L_SYM 4
+// Media layer
+#define L_MED 5
+// Buttons layer
+#define L_MOU 6
+// Keyboard system layer
+#define L_FUN 7
+// Buttons layer
+#define L_BUT 8
+// Keyboard system layer
+#define L_SYS 9
+
+// Behavior configuration
+// -----------------------------------------------------------------------------
+// I like to have couple more keys to not break the CAPS_WORD streak, like the
+// backspace key. Since I make too many mistakes while typing, I find extremely
+// annoying to stop the CAPS_WORD whenever I want to fix an error.
+&caps_word {
+  continue-list = <UNDERSCORE MINUS BSPC>;
+};
+
+    // // // // // // // // // // // // // // // // // // // // // // // // // // // //
+  // About layer-keys layout                                                       //
+  // -----------------------                                                       //
+  // Due to the different sizes of keyboards I want to support in this             //
+  // configuration, there are certain keys that I need to place in one of two      //
+  // possible positions. This means that the keyboard X, these keys need to be     //
+  // placed on position A, but for keyboard Y, these keys should be place on       //
+  // position B.                                                                   //
+  //                                                                               //
+  // The problem for the layout is how to make a key definition be one of two      //
+  // values based on a configuration.                                              //
+  //                                                                               //
+  // The solution I found was to create optional "feature-flags" (which are        //
+  // simple define macros with no value) that each keyboard `.keymap` file may     //
+  // define to indicate the want the specion positioning for the keys.             //
+  //                                                                               //
+  // Then, we would define a macro value for each key position we're interested,   //
+  // and set their values according to the existance of these "feature-flags"      //
+  // macros.                                                                       //
+  //                                                                               //
+  // The macro names I'll use have a specific syntax that would make them easy to  //
+  // identify among all other keys:                                                //
+  //                                                                               //
+  //     P_<OVERAL_POSITION>_<LAYER_ABBREVIATION>[_<ORDER_INDICATION>]             //
+  //                                                                               //
+  // The `OVERAL_POSITION` follows the syntax for the key position used on the     //                                                        //
+  // `keypos_def` files, but also allows the use of the `S` side, that represents  //
+  // a symetric position on the left and right sides; the `LAYER_ABBREVIATION`     //
+  // uses the same names I use on the layer number definition; finally, the        //
+  // `ORDER_INDICATION`, which is an optional part that represets... well...the    //
+  // order that the key is located in the row specified by the `OVERAL_POSITION`   //
+  // part. The order of the key can be anything that makes clear what is the key   //
+  // position, but for a key with just two possible positions on the same row, is  //
+  // common to use `O` for "outter", and `I` for inner, indicating that the key is //
+  // located closer to the outter side of a keyboard half, or its inner side.      //
+// // // // // // // // // // // // // // // // // // // // // // // // // // // //
+
+// Definition of macros representing all alternatives positions for the
+// activation of the "Buttons" layer. Notice that COLEMAK and QWERTY share the
+// same keys on the positions choosen for the activation key.
+#if defined(USE_HOLD_TAP_LAYER_BUTTONS)
+#define P_LB4_QWT  &hll L_BUT Z
+#define P_RB4_QWT  &hlr L_BUT FSLH
+#define P_SF4_QWT  &none
+#define P_SF4_BUT  &none
+#define P_SB4_BUT  UNDO_TOG_BUT_LAYER
+#else
+#define P_SF4_QWT  &motg_but
+#define P_SF4_BUT  &tog L_BUT
+#define P_SB4_BUT  &kp MAC_UNDO
+#endif
+
+// Definition of macros representing all alternatives positions for the
+// activation of the "Functions" layer. Notice that COLEMAK and QWERTY share the
+// same keys on the positions choosen for the activation key.
+//
+// Also, is worth explaining that I like to make the alternative hold-tap
+// position to be in the edge of the core cluster of keys. This means that if a
+// keyboard uses hold-tap for "Buttons" and "Functions", the "Buttons" key will
+// positioned on the outter edge of the core cluster, and the "Functions" one
+// will be right besides it thowards the inner side. But when a keyboard only
+// uses the "Functions" layer activation as a hold-tap, then that key will be
+// the one on the outter edge of the main cluster.
+//
+// Think about this as if you have gravity pulling these keys to the outter
+// side of the keyboard.
+#if defined(USE_HOLD_TAP_LAYER_BUTTONS) && defined(USE_HOLD_TAP_LAYER_FUNCTIONS)
+#define P_RB3_QWT  &hlr L_FUN DOT
+#define P_RF3_QWT  &none
+#define P_RF3_FUN  &none
+#define P_RB3_FUN  &tog L_FUN
+#define P_RB4_FUN  &none
+#elif !defined(USE_HOLD_TAP_LAYER_BUTTONS) && !defined(USE_HOLD_TAP_LAYER_FUNCTIONS)
+#define P_RB4_QWT  &kp FSLH
+#define P_RB3_QWT  &kp DOT
+#define P_RF3_QWT  &motg_fun
+#define P_RF3_FUN  &tog L_FUN
+#define P_RB3_FUN  &none
+#define P_RB4_FUN  &none
+#elif !defined(USE_HOLD_TAP_LAYER_BUTTONS)
+#define P_RB4_QWT  &hlr L_FUN FSLH
+#define P_RB3_QWT  &kp DOT
+#define P_RF3_QWT  &none
+#define P_RF3_FUN  &none
+#define P_RB3_FUN  &none
+#define P_RB4_FUN  &tog L_FUN
+#else
+#define P_RB3_QWT  &kp DOT
+#define P_RF3_QWT  &motg_fun
+#define P_RF3_FUN  &tog L_FUN
+#define P_RB3_FUN  &none
+#define P_RB4_FUN  &none
+#endif
+
+// Definition of macros representing all alternatives positions for the
+// activation of the "Mouse" layer. Notice that COLEMAK and QWERTY share the
+// same keys on the positions choosen for the activation key.
+//
+// Also, is worth explaining that I like to make the alternative hold-tap
+// position to be in the edge of the core cluster of keys. This means that if a
+// keyboard uses hold-tap for "Buttons" and "Mouse", the "Buttons" key will
+// positioned on the outer edge of the core cluster, and the "Mouse" one will
+// be right besides it thowards the inner side. But when a keyboard only uses
+// the "Mouse" layer activation as a hold-tap, then that key will be the one on
+// the outter edge of the main cluster.
+//
+// Think about this as if you have gravity pulling these keys to the outter
+// side of the keyboard.
+#if defined(USE_HOLD_TAP_LAYER_BUTTONS) && defined(USE_HOLD_TAP_LAYER_MOUSE)
+#define P_LB3_QWT  &hll L_MOU X
+#define P_LF3_QWT  &none
+#define P_LF3_MOU  &none
+#define P_LB3_MOU  &tog L_MOU
+#define P_LB4_MOU  &none
+#elif !defined(USE_HOLD_TAP_LAYER_BUTTONS) && !defined(USE_HOLD_TAP_LAYER_MOUSE)
+#define P_LB4_QWT  &kp Z
+#define P_LB3_QWT  &kp X
+#define P_LF3_QWT  &motg_mou
+#define P_LF3_MOU  &tog L_MOU
+#define P_LB3_MOU  &none
+#define P_LB4_MOU  &none
+#elif !defined(USE_HOLD_TAP_LAYER_BUTTONS)
+#define P_LB4_QWT  &hll L_MOU Z
+#define P_LB3_QWT  &kp X
+#define P_LF3_QWT  &none
+#define P_LF3_MOU  &none
+#define P_LB3_MOU  &none
+#define P_LB4_MOU  &tog L_MOU
+#else
+#define P_LB3_QWT  &kp X
+#define P_LF3_QWT  &motg_mou
+#define P_LF3_MOU  &tog L_MOU
+#define P_LB3_MOU  &none
+#define P_LB4_MOU  &none
+#endif
+
+// Special keys behaviors
+// -----------------------------------------------------------------------------
+// Generic ZMK behaviors are defined on their own `dtsi` file, but some
+// behaviors that I create simply to make the layout work, like a hold-tap for
+// the backspace and the activation of layer 2, are all defined inline in this
+// file.
+// This organiztion, is to make it easy to modify behaviors when a key position
+// changes.
+/ {
+  behaviors {
+    // Tap: Backspace
+    // Shift-tap: -
+    // Double-tap: -
+    // Hold: Navigation Layer
+    // Morph: with Shift => Forward delete ('⌦')
+    bspcnav: backspace_or_del_and_layer_nav {
+      compatible = "zmk,behavior-mod-morph";
+      #binding-cells = <0>;
+      bindings = <&hll L_NAV BSPC>, <&kp DEL>;
+      mods = <(MOD_LSFT|MOD_RSFT)>;
+    };
+
+    // Tap: -
+    // Shift-tap: -
+    // Double-tap: Toggle Navigation Layer
+    // Hold: Activate System Layer
+    // Morph: -
+    motg_nav: momentary_or_toggle_layer_nav {
+      compatible = "zmk,behavior-tap-dance";
+      #binding-cells = <0>;
+      tapping-term-ms = <200>;
+      bindings = <&mo L_NAV>, <&tog L_NAV>;
+    };
+
+    // Tap: -
+    // Shift-tap: -
+    // Double-tap: Toggle System Layer
+    // Hold: Activate System Layer
+    // Morph: -
+    motg_sys: momentary_or_toggle_layer_sys {
+      compatible = "zmk,behavior-tap-dance";
+      #binding-cells = <0>;
+      tapping-term-ms = <200>;
+      bindings = <&mo L_SYS>, <&tog L_SYS>;
+    };
+
+    // Tap: -
+    // Shift-tap: -
+    // Double-tap: Toggle Buttons Layer
+    // Hold: Activate Buttons Layer
+    // Morph: -
+    motg_but: momentary_or_toggle_layer_but {
+      compatible = "zmk,behavior-tap-dance";
+      #binding-cells = <0>;
+      tapping-term-ms = <200>;
+      bindings = <&mo L_BUT>, <&tog L_BUT>;
+    };
+
+    // Tap: -
+    // Shift-tap: -
+    // Double-tap: Toggle Functions Layer
+    // Hold: Activate Functions Layer
+    // Morph: -
+    motg_fun: momentary_or_toggle_layer_fun {
+      compatible = "zmk,behavior-tap-dance";
+      #binding-cells = <0>;
+      tapping-term-ms = <200>;
+      bindings = <&mo L_FUN>, <&tog L_FUN>;
+    };
+
+    //// Tap: -
+    //// Shift-tap: -
+    //// Double-tap: Toggle Mouse Layer
+    //// Hold: Activate Mouse Layer
+    //// Morph: -
+    motg_mou: momentary_or_toggle_layer_mou {
+      compatible = "zmk,behavior-tap-dance";
+      #binding-cells = <0>;
+      tapping-term-ms = <200>;
+      bindings = <&mo L_MOU>, <&tog L_MOU>;
+    };
+
+    // Tap: Backslash ('\')
+    // Shift-tap: Pipe ('|')
+    // Double-tap: -
+    // Hold: Apple Globe key
+    // Morph: with Cmd => Command + tilde ('⌘~')
+    globebslh: globe_or_backslash {
+      compatible = "zmk,behavior-mod-morph";
+      #binding-cells = <0>;
+      bindings = <&hml GLOBE BSLH>, <&kp TILDE>;
+      mods = <(MOD_LGUI|MOD_RGUI)>;
+      keep-mods = <(MOD_LGUI|MOD_RGUI)>;
+    };
+
+    // Tap: Left square bracket ('[')
+    // Shift-tap: Left curly brace ('{')
+    // Double-tap: -
+    // Hold: -
+    // Morph: with Cmd => Command + grave ('⌘`')
+    lbktgrave: left_bracket_or_cmd_grave {
+      compatible = "zmk,behavior-mod-morph";
+      #binding-cells = <0>;
+      bindings = <&kp LBKT>, <&kp GRAVE>;
+      mods = <(MOD_LGUI|MOD_RGUI)>;
+      keep-mods = <(MOD_LGUI|MOD_RGUI)>;
+    };
+
+    // Tap: Grave ('`')
+    // Shift-tap: Tilde ('~')
+    // Double-tap: Turn on CAPS_WORD
+    // Hold: -
+    // Morph: -
+    gravecaps: grave_or_capsword {
+      compatible = "zmk,behavior-tap-dance";
+      #binding-cells = <0>;
+      tapping-term-ms = <200>;
+      bindings = <&kp GRAVE>, <&caps_word>;
+    };
+
+    // Tap: Single quote  ("'")
+    // Shift-tap: Double quote ('"')
+    // Double-tap: Turn on CAPS_WORD
+    // Hold: -
+    // Morph: -
+    sqtcaps: singlequote_or_capsword {
+      compatible = "zmk,behavior-tap-dance";
+      #binding-cells = <0>;
+      tapping-term-ms = <200>;
+      bindings = <&kp SQT>, <&caps_word>;
+    };
+
+    appswtnxt: application_switch_next {
+      compatible = "zmk,behavior-macro";
+      #binding-cells = <0>;
+      bindings = <&kp LG(TAB)>;
+    };
+
+    winswtnxt: window_switch_next {
+      compatible = "zmk,behavior-macro";
+      #binding-cells = <0>;
+      bindings = <&kp LG(GRAVE)>;
+    };
+
+    appPwinN: application_switch_previous_window_next {
+      compatible = "zmk,behavior-mod-morph";
+      #binding-cells = <0>;
+      bindings = <&winswtnxt>, <&kp GRAVE>;
+      mods = <(MOD_LGUI|MOD_RGUI)>;
+      keep-mods = <(MOD_LGUI|MOD_RGUI)>;
+    };
+
+    winPglobe: window_previous_globe {
+      compatible = "zmk,behavior-mod-morph";
+      #binding-cells = <0>;
+      bindings = <&kp GLOBE>, <&kp TILDE>;
+      mods = <(MOD_LGUI|MOD_RGUI)>;
+      keep-mods = <(MOD_LGUI|MOD_RGUI)>;
+    };
+  };
+};
+
+// Combo keys
+// -----------------------------------------------------------------------------
+// Unfortunately, there is just that much keys one can use on a small keyboard,
+// and not all the functionalities I want for my base layer fit on a 42-keys
+// keyboard. The solution for that is to use Combo keys, so I can make two keys
+// that make sense to be pressed together, to behave in a different way.
+//
+// Notice that Combo keys require the keys to be defined as numbers
+// representing their physical position in the keyboard. Because of that, each
+// keyboard mapping will have to define a macro for each combo on this layout.
+// The names of these macros should follow the following syntax:
+//
+// COMBO_KEY_<combo-name>
+/ {
+    combos {
+        compatible = "zmk,combos";
+
+        // Turn on CAPS_WORD when pressing both shift keys together.
+        combo_caps_word {
+            timeout-ms = <75>;
+            key-positions = COMBO_KEY_CAPS_WORD;
+            layers = <L_QWT L_CMK>;
+            bindings = <&caps_word>;
+        };
+    };
+};
+
+// Keyboard Layout definition
+// -----------------------------------------------------------------------------
+// Not all keys defined here are used in all keyboards this layout suppots. To
+// check where a key defined here is located on the physical layout of a
+// keyboard, look in the keyboard's '.keymap' file.
+/ {
+  keymap {
+    compatible = "zmk,keymap";
+
+    // Layer: MAIN
+    // ╭────────────────── Left-side ──────────────────╮                      ╭───────────────── Right-side ──────────────────╮
+    // ├───────┬───────┬───────┬───────┬───────┬───────┤                      ├───────┬───────┬───────┬───────┬───────┬───────┤
+    // │ [ ┊ ⌘`│   !   │   @   │   #   │   $   │   %   │                      │   ^   │   &   │   *   │   (   │   )   │   ]   │
+    // ├───────╆━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━┪ ┌───────╮  ╭───────┐ ┢━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╅───────┤
+    // │   󰌒   ┃   Q   ┃   W   ┃   E   ┃   R   ┃   T   ┃ │  HYP  │  │  HYP  │ ┃   Y   ┃   U   ┃   I   ┃   O   ┃   P   ┃   _   │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │   `   ┃ A ┊ 󰘴 ┃ S ┊ 󰘵 ┃ D ┊ 󰘳 ┃ F ┊ 󰘶 ┃   G   ┃ │  MEH  │  │  MEH  │ ┃   H   ┃ J ┊ 󰘶 ┃ K ┊ 󰘳 ┃ L ┊ 󰘵 ┃ ; ┊ 󰘴 ┃   '   │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │ \ ┊  ┃   Z   ┃   X   ┃   C   ┃   V   ┃   B   ┃ │   ↖   │  │   ⇞   │ ┃   N   ┃   M   ┃   ,   ┃   .   ┃   /   ┃ = ┊  │
+    // ╰───────┺━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┛ ├───────┤  ├───────┤ ┗━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┹───────╯
+    //         ┌───────┬───────┬───────┬───────┬───────┐ │   ↘   │  │   ⇟   │ ┌───────┬───────┬───────┬───────┬───────┐
+    //         │   󰎺   │   󰎷   │   󰎯   │ 󰭜 ┊ 󰎥 │ ⎋ ┊ 󰎫 │ └───────╯  ╰───────┘ │ ⏎ ┊ 󰎲 │ 󱁐 ┊ 󰎨 │   󰎴   │   󰎷   │   󰎺   │
+    //         ╰───────┴───────┴───────┴───────┴───────┘                      └───────┴───────┴───────┴───────┴───────╯
+    MAIN {
+      display-name = "QWERTY";
+      bindings = <LAYER_ADAPTER(
+        &lbktgrave, &kp_rN1,   &kp_rN2,   &kp_rN3,   &kp_rN4,  &kp_rN5,                               &kp_rN6,       &kp_rN7,   &kp_rN8,   &kp_rN9,   &kp_rN0,    &kp RBKT,
+        &kp TAB,    &kp Q,     &kp W,     &kp E,     &kp R,    &kp T,         &kp LHYP,    &kp RHYP,  &kp Y,         &kp U,     &kp I,     &kp O,     &kp P,      &kp MINUS,
+        &kp GRAVE,  LHM4(A),   LHM3(S),   LHM2(D),   LHM1(F),  &kp G,         &kp LMEH,    &kp RMEH,  &kp H,         RHM1(J),   RHM2(K),   RHM3(L),   RHM4(SEMI), &kp SQT,
+        &globebslh, P_LB4_QWT, P_LB3_QWT, &kp C,     AS(V),    &kp B,         &kp HOME,    &kp PG_UP, &kp N,         &kp M,     &kp COMMA, P_RB3_QWT, P_RB4_QWT,  &hmr GLOBE EQUAL,
+                    &motg_sys, P_SF4_QWT, P_LF3_QWT, &bspcnav, &lt L_SYM ESC, &kp END,     &kp PG_DN, &lt L_MED RET, &hlr L_NUM SPACE,     P_RF3_QWT, P_SF4_QWT,  &motg_sys
+      )>;
+      sensor-bindings = <&mouscrl SCRLDN SCRLUP &inc_dec_kp C_VOL_UP C_VOL_DN>;
+    };
+
+    // Layer: COLEMAK
+    // ╭────────────────── Left-side ──────────────────╮                      ╭───────────────── Right-side ──────────────────╮
+    // ├───────┬───────┬───────┬───────┬───────┬───────┤                      ├───────┬───────┬───────┬───────┬───────┬───────┤
+    // │ [ ┊ ⌘`│   !   │   @   │   #   │   $   │   %   │                      │   ^   │   &   │   *   │   (   │   )   │   ]   │
+    // ├───────╆━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━┪ ┌───────╮  ╭───────┐ ┢━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╅───────┤
+    // │   󰌒   ┃   Q   ┃   W   ┃   F   ┃   P   ┃   B   ┃ │  HYP  │  │  HyP  │ ┃   J   ┃   L   ┃   U   ┃   Y   ┃   ;   ┃   _   │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │   `   ┃ A ┊ 󰘴 ┃ R ┊ 󰘵 ┃ S ┊ 󰘳 ┃ T ┊ 󰘶 ┃   G   ┃ │  MEH  │  │  MeH  │ ┃   M   ┃ N ┊ 󰘶 ┃ E ┊ 󰘳 ┃ I ┊ 󰘵 ┃ O ┊ 󰘴 ┃   '   │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │ \ ┊  ┃   Z   ┃   X   ┃   C   ┃   D   ┃   V   ┃ │   ↖   │  │   ⇞   │ ┃   K   ┃   H   ┃   ,   ┃   .   ┃   /   ┃ = ┊  │
+    // ╰───────┺━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┛ ├───────┤  ├───────┤ ┗━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┹───────╯
+    //         ┌───────┬───────┬───────┬───────┬───────┐ │   ↘   │  │   ⇟   │ ┌───────┬───────┬───────┬───────┬───────┐
+    //         │   󰎺   │   󰎷   │   󰎯   │ 󰭜 ┊ 󰎥 │ ⎋ ┊ 󰎫 │ └───────╯  ╰───────┘ │ ⏎ ┊ 󰎲 │ 󱁐 ┊ 󰎨 │   󰎴   │   󰎷   │   󰎺   │
+    //         ╰───────┴───────┴───────┴───────┴───────┘                      └───────┴───────┴───────┴───────┴───────╯
+    COLEMAK {
+      display-name = "COLEMAK";
+      bindings = <LAYER_ADAPTER(
+        &lbktgrave, &kp_rN1,   &kp_rN2,   &kp_rN3,   &kp_rN4,   &kp_rN5,                               &kp_rN6,       &kp_rN7,   &kp_rN8,   &kp_rN9,   &kp_rN0,   &kp RBKT,
+        &kp TAB,    &kp Q,     &kp W,     &kp F,     &kp P,     &kp B,         &kp LHYP,    &kp RHYP,  &kp J,         &kp L,     &kp U,     &kp Y,     &kp SEMI,  &kp MINUS,
+        &kp GRAVE,  LHM4(A),   LHM3(R),   LHM2(S),   LHM1(T),   &kp G,         &kp LMEH,    &kp RMEH,  &kp M,         RHM1(N),   RHM2(E),   RHM3(I),   RHM4(O),   &kp SQT,
+        &globebslh, P_LB4_QWT, P_LB3_QWT, &kp C,     &kp D,     &kp V,         &kp HOME,    &kp PG_UP, &kp K,         &kp H,     &kp COMMA, P_RB3_QWT, P_RB4_QWT, &hmr GLOBE EQUAL,
+                    &motg_sys, P_SF4_QWT, P_LF3_QWT, &bspcnav,  &lt L_SYM ESC, &kp END,     &kp PG_DN, &lt L_MED RET, &hlr L_NUM SPACE,     P_RF3_QWT, P_SF4_QWT, &motg_sys
+      )>;
+      sensor-bindings = <&mouscrl SCRLDN SCRLUP &inc_dec_kp C_VOL_UP C_VOL_DN>;
+    };
+
+    // Layer: NAVIGATION
+    // ╭────────────────── Left-side ──────────────────╮                      ╭───────────────── Right-side ──────────────────╮
+    // ├───────┬───────┬───────┬───────┬───────┬───────┤                      ├───────┬───────┬───────┬───────┬───────┬───────┤
+    // │  ⌘ `  │  󰘳 1  │  󰘳 2  │  󰘳 3  │  󰘳 4  │  󰘳 5  │                      │       │   󰌥   │  ←   │   →  │   󰌒   │       │
+    // ├───────╆━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━┪ ┌───────╮  ╭───────┐ ┢━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╅───────┤
+    // │  ⌘ ⇥  ┃  󰘳 Q  ┃  󰘳 W  ┃  󰘳 E  ┃  󰘳 R  ┃  󰘳 T  ┃ │  HYP  │  │  HYP  │ ┃       ┃   ↖   ┃   ⇟   ┃   ⇞   ┃   ↘   ┃       │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │  ⌘ `  ┃ 󰘳A┊ 󰘴 ┃ 󰘳S┊ 󰘵 ┃ 󰘳D┊ 󰘳 ┃ 󰘳F┊ 󰘶 ┃  󰘳 G  ┃ │  MEH  │  │  MEH  │ ┃       ┃   ←   ┃   ↓   ┃   ↑   ┃   →   ┃       │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │      ┃  󰘳 Z  ┃  󰘳 X  ┃  󰘳 C  ┃  󰘳 V  ┃  󰘳 B  ┃ │   ↖   │  │   ⇞   │ ┃       ┃   󰾺   ┃   󰊆   ┃   󰊅   ┃   󰾸   ┃       │
+    // ╰───────┺━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┛ ├───────┤  ├───────┤ ┗━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┹───────╯
+    //         ┌───────┬───────┬───────┬───────┬───────┐ │   ↘   │  │   ⇟   │ ┌───────┬───────┬───────┬───────┬───────┐
+    //         │       │       │       │ -=〿=- │       │ └───────╯  ╰───────┘ │       │       │       │       │   󰍁   │
+    //         ╰───────┴───────┴───────┴───────┴───────┘                      └───────┴───────┴───────┴───────┴───────╯
+    NAV {
+      display-name = "Navigation";
+      bindings = <LAYER_ADAPTER(
+        &appPwinN,  &kp LG(N1),  &kp LG(N2),  &kp LG(N3),  &kp LG(N4),  &kp LG(N5),                         &none, &kp BTAB,     &kp MAC_FDPRV, &kp MAC_FDNXT, &kp TAB,      &none,
+        &appswtnxt, &kp LG(Q),   &kp LG(W),   &kp LG(E),   &kp LG(R),   &kp LG(T),  &kp LHYP,    &kp RHYP,  &none, &kp HOME,     &kp PG_DN,     &kp PG_UP,     &kp END,      &none,
+        &appPwinN,  LMT4(LG(A)), LMT3(LG(S)), LMT2(LG(D)), LMT1(LG(F)), NAV_LG_G,   &kp LMEH,    &kp RMEH,  &none, &kp LEFT,     &kp DOWN,      &kp UP,        &kp RIGHT,    &none,
+        &winPglobe, NAV_LG_Z,    NAV_LG_X,    NAV_LG_C,    NAV_LG_V,    &kp LG(B),  &kp HOME,    &kp PG_UP, &none, &kp MAC_WRDP, &kp MAC_STTL,  &kp MAC_ENDL,  &kp MAC_WRDN, &none,
+                    &none,       &none,       &none,       &tog L_NAV,  &none,      &kp END,     &kp PG_DN, &none, &none,        &none,         &none,         &molock
+      )>;
+      sensor-bindings = <&mouscrl SCRLDN SCRLUP &inc_dec_kp C_VOL_UP C_VOL_DN>;
+    };
+
+    // Layer: NUMBERS
+    // ╭────────────────── Left-side ──────────────────╮                      ╭───────────────── Right-side ──────────────────╮
+    // ├───────┬───────┬───────┬───────┬───────┬───────┤                      ├───────┬───────┬───────┬───────┬───────┬───────┤
+    // │       │   [   │   *   │   /   │   ]   │   ^   │                      │       │       │       │       │       │       │
+    // ├───────╆━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━┪ ┌───────╮  ╭───────┐ ┢━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╅───────┤
+    // │   󰌒   ┃   1   ┃   2   ┃   3   ┃   4   ┃   5   ┃ │  HYP  │  │  HYP  │ ┃       ┃       ┃       ┃       ┃       ┃       │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │   ⏎   ┃   6   ┃   7   ┃   8   ┃   9   ┃   0   ┃ │  MEH  │  │  MEH  │ ┃       ┃   󰘶   ┃   󰘳   ┃   󰘵   ┃   󰘴   ┃       │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │   =   ┃   (   ┃   +   ┃   -   ┃   )   ┃   .   ┃ │   ↖   │  │   ⇞   │ ┃       ┃       ┃       ┃       ┃       ┃      │
+    // ╰───────┺━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┛ ├───────┤  ├───────┤ ┗━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┹───────╯
+    //         ┌───────┬───────┬───────┬───────┬───────┐ │   ↘   │  │   ⇟   │ ┌───────┬───────┬───────┬───────┬───────┐
+    //         │   󰍁   │       │   ,   │   󰭜   │   󱁐   │ └───────╯  ╰───────┘ │       │ -=〿=- │       │       │       │
+    //         ╰───────┴───────┴───────┴───────┴───────┘                      └───────┴───────┴───────┴───────┴───────╯
+    NUM {
+      display-name = "Numbers";
+      bindings = <LAYER_ADAPTER(
+        &none,        &kp LBKT, &kp STAR, &kp FSLH,  &kp RBKT,    &kp CARET,                          &none, &none,      &none,     &none,     &none,     &none,
+        &kp TAB,      &kp N1,   &kp N2,   &kp N3,    &kp N4,      &kp N5,     &kp LHYP,    &kp RHYP,  &none, &none,      &none,     &none,     &none,     &none,
+        &kp KP_ENTER, &kp N6,   &kp N7,   &kp N8,    &kp N9,      &kp N0,     &kp LMEH,    &kp RMEH,  &none, &kp RHRM1,  &kp RHRM2, &kp RHRM3, &kp RHRM4, &none,
+        &kp EQUAL,    &kp LPAR, &kp PLUS, &kp MINUS, &kp RPAR,    &kp KP_DOT, &kp HOME,    &kp PG_UP, &none, &none,      &none,     &none,     &none,     &kp GLOBE,
+                      &molock,  &none,    &kp COMMA, &kp_bspcdel, &kp SPACE,  &kp END,     &kp PG_DN, &none, &tog L_NUM, &none,     &none,     &none
+      )>;
+      sensor-bindings = <&mouscrl SCRLDN SCRLUP &inc_dec_kp C_VOL_UP C_VOL_DN>;
+    };
+
+    // Layer: SYMBOLS
+    // ╭────────────────── Left-side ──────────────────╮                      ╭───────────────── Right-side ──────────────────╮
+    // ├───────┬───────┬───────┬───────┬───────┬───────┤                      ├───────┬───────┬───────┬───────┬───────┬───────┤
+    // │       │       │       │       │       │       │                      │   ?   │   +   │   -   │   .   │   /   │   \   │
+    // ├───────╆━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━┪ ┌───────╮  ╭───────┐ ┢━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╅───────┤
+    // │       ┃       ┃       ┃       ┃       ┃       ┃ │  HYP  │  │  HYP  │ ┃   &   ┃   <   ┃   =   ┃   >   ┃   |   ┃   #   │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │   `   ┃   󰘴   ┃   󰘵   ┃   󰘳   ┃   󰘶   ┃       ┃ │  MEH  │  │  MEH  │ ┃   [   ┃   (   ┃   :   ┃   )   ┃   ]   ┃   %   │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │      ┃       ┃       ┃       ┃       ┃       ┃ │   ↖   │  │   ⇞   │ ┃   $   ┃   {   ┃   *   ┃   }   ┃   ^   ┃   !   │
+    // ╰───────┺━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┛ ├───────┤  ├───────┤ ┗━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┹───────╯
+    //         ┌───────┬───────┬───────┬───────┬───────┐ │   ↘   │  │   ⇟   │ ┌───────┬───────┬───────┬───────┬───────┐
+    //         │       │       │       │       │ -=〿=- │ └───────╯  ╰───────┘ │   @   │   󱁐   │       │       │   󰍁   │
+    //         ╰───────┴───────┴───────┴───────┴───────┘                      └───────┴───────┴───────┴───────┴───────╯
+    SYMBOL {
+      display-name = "Symbols";
+      bindings = <LAYER_ADAPTER(
+        &none,     &none,     &none,     &none,     &none,     &none,                              &kp QMARK, &kp PLUS,  &kp MINUS, &kp DOT,  &kp FSLH,  &kp BSLH,
+        &none,     &none,     &none,     &none,     &none,     &none,      &kp LHYP,    &kp RHYP,  &kp AMPS,  &kp LT,    &kp EQUAL, &kp GT,   &kp PIPE,  &kp HASH,
+        &none,     &kp LHRM4, &kp LHRM3, &kp LHRM2, &kp LHRM1, &none,      &kp LMEH,    &kp RMEH,  &kp LBKT,  &kp LPAR,  &kp COLON, &kp RPAR, &kp RBKT,  &kp PRCNT,
+        &kp GLOBE, &none,     &none,     &none,     &none,     &none,      &kp HOME,    &kp PG_UP, &kp DLLR,  &kp LBRC,  &kp STAR,  &kp RBRC, &kp CARET, &kp EXCL,
+                   &none,     &none,     &none,     &none,     &tog L_SYM, &kp END,     &kp PG_DN, &kp AT,    &kp SPACE, &none,     &none,    &molock
+      )>;
+      sensor-bindings = <&mouscrl SCRLDN SCRLUP &inc_dec_kp C_VOL_UP C_VOL_DN>;
+    };
+
+    // Layer: MEDIA
+    // ╭────────────────── Left-side ──────────────────╮                      ╭───────────────── Right-side ──────────────────╮
+    // ├───────┬───────┬───────┬───────┬───────┬───────┤                      ├───────┬───────┬───────┬───────┬───────┬───────┤
+    // │       │       │       │       │       │       │                      │       │       │       │       │       │       │
+    // ├───────╆━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━┪ ┌───────╮  ╭───────┐ ┢━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╅───────┤
+    // │   󰝝   ┃   󰖨   ┃       ┃       ┃       ┃  󰝚 󰝝  ┃ │  HYP  │  │  HYP  │ ┃       ┃       ┃       ┃       ┃       ┃       │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │   󰝞   ┃      ┃   󰒮   ┃   󰐎   ┃   󰒭   ┃  󰝚 󰝞  ┃ │  MEH  │  │  MEH  │ ┃       ┃   󰘶   ┃   󰘳   ┃   󰘵   ┃   󰘴   ┃       │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │      ┃       ┃  ← 󰝚  ┃  󰝚 󰑐  ┃  󰝚 →? ┃  󰝚 󰍪  ┃ │   ↖   │  │   ⇞   │ ┃       ┃       ┃       ┃       ┃       ┃      │
+    // ╰───────┺━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┛ ├───────┤  ├───────┤ ┗━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┹───────╯
+    //         ┌───────┬───────┬───────┬───────┬───────┐ │   ↘   │  │   ⇟   │ ┌───────┬───────┬───────┬───────┬───────┐
+    //         │   󰍁   │       │       │       │   󰓛   │ └───────╯  ╰───────┘ │ -=〿=- │       │       │       │       │
+    //         ╰───────┴───────┴───────┴───────┴───────┘                      └───────┴───────┴───────┴───────┴───────╯
+    MEDIA {
+      // &rgb_ug RGB_TOG
+      display-name = "Media";
+      bindings = <LAYER_ADAPTER(
+        &none,        &none,        &none,      &none,    &none,      &none,                              &none,      &none,     &none,     &none,     &none,     &none,
+        &kp C_VOL_UP, &kp C_BRI_UP, &none,      &none,    &none,      &none,      &kp LHYP,    &kp RHYP,  &none,      &none,     &none,     &none,     &none,     &none,
+        &kp C_VOL_DN, &kp C_BRI_DN, &kp C_PREV, &kp C_PP, &kp C_NEXT, &none,      &kp LMEH,    &kp RMEH,  &none,      &kp RHRM1, &kp RHRM2, &kp RHRM3, &kp RHRM4, &none,
+        &kp C_MUTE,   &none,        &none,      &none,    &none,      &none,      &kp HOME,    &kp PG_UP, &none,      &none,     &none,     &none,     &none,     &kp GLOBE,
+                      &molock,      &none,      &none,    &none,      &kp C_STOP, &kp END,     &kp PG_DN, &tog L_MED, &none,     &none,     &none,     &none
+      )>;
+      sensor-bindings = <&mouscrl SCRLDN SCRLUP &inc_dec_kp C_VOL_UP C_VOL_DN>;
+    };
+
+    // Layer: MOUSE
+    // ╭────────────────── Left-side ──────────────────╮                      ╭───────────────── Right-side ──────────────────╮
+    // ├───────┬───────┬───────┬───────┬───────┬───────┤                      ├───────┬───────┬───────┬───────┬───────┬───────┤
+    // │       │       │       │       │       │       │                      │       │       │       │       │       │       │
+    // ├───────╆━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━┪ ┌───────╮  ╭───────┐ ┢━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╅───────┤
+    // │       ┃       ┃       ┃       ┃       ┃       ┃ │  HYP  │  │  HYP  │ ┃       ┃   󰆐   ┃   󰆏   ┃   󰆒   ┃   󰕌   ┃       │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │   `   ┃   󰘴   ┃   󰘵   ┃   󰘳   ┃   󰘶   ┃       ┃ │  MEH  │  │  MEH  │ ┃       ┃  ← 󰍽  ┃  ↓ 󰍽  ┃  󰍽 ↑  ┃  󰍽 →  ┃       │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │      ┃       ┃       ┃       ┃       ┃       ┃ │   ↖   │  │   ⇞   │ ┃       ┃  ← 󱕒  ┃  ↓ 󱕒  ┃  󱕒 ↑  ┃  󱕒 →  ┃       │
+    // ╰───────┺━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┛ ├───────┤  ├───────┤ ┗━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┹───────╯
+    //         ┌───────┬───────┬───────┬───────┬───────┐ │   ↘   │  │   ⇟   │ ┌───────┬───────┬───────┬───────┬───────┐
+    //         │       │       │ -=〿=- │       │       │ └───────╯  ╰───────┘ │  R 󰍽  │  L 󰍽  │  M 󰍽  │       │   󰍁   │
+    //         ╰───────┴───────┴───────┴───────┴───────┘                      └───────┴───────┴───────┴───────┴───────╯
+    MOUSE {
+      display-name = "Mouse";
+      bindings = <LAYER_ADAPTER(
+        &none,     &none,     &none,     &none,     &none,     &none,                            &none,     &none,         &none,         &none,         &none,          &none,
+        &none,     &mkp MB4,  &mkp MB3,  &mkp MB2,  &mkp MB1,  &mkp MB5, &kp LHYP,    &kp RHYP,  &none,     &kp MAC_CUT,   &kp MAC_COPY,  &kp MAC_PASTE, &kp MAC_UNDO,   &none,
+        &none,     &kp LHRM4, &kp LHRM3, &kp LHRM2, &kp LHRM1, &none,    &kp LMEH,    &kp RMEH,  &none,     MKP_MOVE_LEFT, MKP_MOVE_DOWN, MKP_MOVE_UP,   MKP_MOVE_RIGHT, &none,
+        &kp GLOBE, P_LB4_MOU, P_LB3_MOU, &none,     &none,     &none,    &kp HOME,    &kp PG_UP, &none,     MKP_SCRL_LEFT, MKP_SCRL_DOWN, MKP_SCRL_UP,   MKP_SCRL_RIGHT, &none,
+                   &none,     &none,     P_LF3_MOU, &none,     &none,    &kp END,     &kp PG_DN, &mkp MB2,  &mkp MB1,      &mkp MB3,      &mkp MB4,     &molock
+      )>;
+      sensor-bindings = <&mouscrl SCRLDN SCRLUP &inc_dec_kp C_VOL_UP C_VOL_DN>;
+    };
+
+    // Layer: FUNCTIONS
+    // ╭────────────────── Left-side ──────────────────╮                      ╭───────────────── Right-side ──────────────────╮
+    // ├───────┬───────┬───────┬───────┬───────┬───────┤                      ├───────┬───────┬───────┬───────┬───────┬───────┤
+    // │       │  F16  │  F17  │  F18  │  F19  │  F20  │                      │       │       │       │       │       │       │
+    // ├───────╆━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━┪ ┌───────╮  ╭───────┐ ┢━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╅───────┤
+    // │       ┃  F11  ┃  F12  ┃  F13  ┃  F14  ┃  F15  ┃ │  HYP  │  │  HYP  │ ┃       ┃       ┃       ┃       ┃       ┃       │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │   `   ┃  F6   ┃  F7   ┃  F8   ┃  F9   ┃  F10  ┃ │  MEH  │  │  MEH  │ ┃       ┃   󰘶   ┃   󰘳   ┃   󰘵   ┃   󰘴   ┃       │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │       ┃  F1   ┃  F2   ┃  F3   ┃  F4   ┃  F5   ┃ │   ↖   │  │   ⇞   │ ┃       ┃       ┃       ┃       ┃       ┃      │
+    // ╰───────┺━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┛ ├───────┤  ├───────┤ ┗━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┹───────╯
+    //         ┌───────┬───────┬───────┬───────┬───────┐ │   ↘   │  │   ⇟   │ ┌───────┬───────┬───────┬───────┬───────┐
+    //         │   󰍁   │       │       │       │       │ └───────╯  ╰───────┘ │       │       │ -=〿=- │       │       │
+    //         ╰───────┴───────┴───────┴───────┴───────┘                      └───────┴───────┴───────┴───────┴───────╯
+    FUNCTIONS {
+      display-name = "Functions";
+      bindings = <LAYER_ADAPTER(
+        &none, &kp F16, &kp F17, &kp F18, &kp F19, &kp F20,                         &none, &none,     &none,     &none,     &none,     &none,
+        &none, &kp F11, &kp F12, &kp F13, &kp F14, &kp F15, &kp LHYP,    &kp RHYP,  &none, &none,     &none,     &none,     &none,     &none,
+        &none, &kp F6,  &kp F7,  &kp F8,  &kp F9,  &kp F10, &kp LMEH,    &kp RMEH,  &none, &kp RHRM1, &kp RHRM2, &kp RHRM3, &kp RHRM4, &none,
+        &none, &kp F1,  &kp F2,  &kp F3,  &kp F4,  &kp F5,  &kp HOME,    &kp PG_UP, &none, &none,     &none,     P_RB3_FUN, P_RB4_FUN, &kp GLOBE,
+               &molock, &none,   &none,   &none,   &none,   &kp END,     &kp PG_DN, &none, &none,     P_RF3_FUN, &none,     &none
+      )>;
+      sensor-bindings = <&mouscrl SCRLDN SCRLUP &inc_dec_kp C_VOL_UP C_VOL_DN>;
+    };
+
+    // Layer: BUTTONS
+    // ╭────────────────── Left-side ──────────────────╮                      ╭───────────────── Right-side ──────────────────╮
+    // ├───────┬───────┬───────┬───────┬───────┬───────┤                      ├───────┬───────┬───────┬───────┬───────┬───────┤
+    // │       │   󰌥   │  ←   │   →  │   󰌒   │   󰀻   │                      │   󰀻   │   󰌥   │  ←   │   →  │   󰌒   │       │
+    // ├───────╆━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━┪ ┌───────╮  ╭───────┐ ┢━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╅───────┤
+    // │       ┃  ← 󰘔  ┃  ← 󰖲  ┃  󰖲 →  ┃  󰘔 →  ┃   󱂬   ┃ │  HYP  │  │  HYP  │ ┃   󱂬   ┃  ← 󰘔  ┃  ← 󰖲  ┃  󰖲 →  ┃  󰘔 →  ┃       │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │   `   ┃   󰘴   ┃   󰘵   ┃   󰘳   ┃   󰘶   ┃   󰧨   ┃ │  MEH  │  │  MEH  │ ┃   󰧨   ┃   󰘶   ┃   󰘳   ┃   󰘵   ┃   󰘴   ┃       │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │ 󰑎 ┊  ┃   󰕌   ┃   󰆐   ┃   󰆏   ┃   󰆒   ┃   󰥩   ┃ │   ↖   │  │   ⇞   │ ┃   󰥩   ┃   󰆒   ┃   󰆏   ┃   󰆐   ┃   󰕌   ┃ 󰑎 ┊  │
+    // ╰───────┺━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┛ ├───────┤  ├───────┤ ┗━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┹───────╯
+    //         ┌───────┬───────┬───────┬───────┬───────┐ │   ↘   │  │   ⇟   │ ┌───────┬───────┬───────┬───────┬───────┐
+    //         │   󰍁   │ -=〿=- │       │       │       │ └───────╯  ╰───────┘ │       │       │       │ -=〿=- │   󰍁   │
+    //         ╰───────┴───────┴───────┴───────┴───────┘                      └───────┴───────┴───────┴───────┴───────╯
+    BUTTON {
+      display-name = "Buttons";
+      bindings = <LAYER_ADAPTER(
+        &none,              &kp BTAB,     &kp MAC_FDPRV, &kp MAC_FDNXT, &kp TAB,       &kp MAC_LP,                             &kp MAC_LP,     &kp BTAB,      &kp MAC_FDPRV, &kp MAC_FDNXT, &kp TAB,      &none,
+        &none,              &kp MAC_DKTP, &kp MAC_WINP,  &kp MAC_WINN,  &kp MAC_DKTN,  &kp MAC_APPWIN, &kp LHYP,    &kp RHYP,  &kp MAC_APPWIN, &kp MAC_DKTP,  &kp MAC_WINP,  &kp MAC_WINN,  &kp MAC_DKTN, &none,
+        &none,              &kp LHRM4,    &kp LHRM3,     &kp LHRM2,     &kp LHRM1,     &kp MAC_MC,     &kp LMEH,    &kp RMEH,  &kp MAC_MC,     &kp RHRM1,     &kp RHRM2,     &kp RHRM3,     &kp RHRM4,    &none,
+        &mt GLOBE MAC_REDO, P_SB4_BUT,    &kp MAC_CUT,   &kp MAC_COPY,  &kp MAC_PASTE, &kp MAC_SP,     &kp HOME,    &kp PG_UP, &kp MAC_SP,     &kp MAC_PASTE, &kp MAC_COPY,  &kp MAC_CUT,   P_SB4_BUT,    &mt GLOBE MAC_REDO,
+                            &molock,      P_SF4_BUT,     &none,         &none,         &none,          &kp END,     &kp PG_DN, &none,          &none,         &none,         P_SF4_BUT,     &molock
+      )>;
+      sensor-bindings = <&mouscrl SCRLDN SCRLUP &inc_dec_kp C_VOL_UP C_VOL_DN>;
+    };
+
+    // Layer: SYSTEM
+    // ╭────────────────── Left-side ──────────────────╮                      ╭───────────────── Right-side ──────────────────╮
+    // ├───────┬───────┬───────┬───────┬───────┬───────┤                      ├───────┬───────┬───────┬───────┬───────┬───────┤
+    // │       │       │       │       │       │       │                      │       │       │       │       │       │       │
+    // ├───────╆━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━┪ ┌───────╮  ╭───────┐ ┢━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╈━━━━━━━╅───────┤
+    // │      ┃ 󰸌 H ↑ ┃ 󰸌 S ↑ ┃ 󰸌 L ↑ ┃  󰛩 ↑  ┃   󱐥   ┃ │  HYP  │  │  HYP  │ ┃       ┃       ┃       ┃       ┃       ┃      │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │   󰜉   ┃ 󰸌 H ↓ ┃ 󰸌 S ↓ ┃ 󰸌 L ↓ ┃  󰛩 ↓  ┃      ┃ │  MEH  │  │  MEH  │ ┃       ┃       ┃       ┃       ┃       ┃   󰜉   │
+    // ├───────╊━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━┫ ├───────┤  ├───────┤ ┣━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╋━━━━━━━╉───────┤
+    // │       ┃  󰸌 󰨚  ┃  󰸌 󰜉  ┃       ┃       ┃      ┃ │   ↖   │  │   ⇞   │ ┃  󰂱 1  ┃  󰂱 2  ┃  󰂱 3  ┃  󰂱 4  ┃  󰂱 5  ┃   󰂲   │
+    // ╰───────┺━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┛ ├───────┤  ├───────┤ ┗━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┹───────╯
+    //         ┌───────┬───────┬───────┬───────┬───────┐ │   ↘   │  │   ⇟   │ ┌───────┬───────┬───────┬───────┬───────┐
+    //         │ -=󰍁=- │       │       │       │   󰌓   │ └───────╯  ╰───────┘ │       │       │       │       │ -=󰍁=- │
+    //         ╰───────┴───────┴───────┴───────┴───────┘                      └───────┴───────┴───────┴───────┴───────╯
+    SYSTEM {
+      display-name = "System";
+      bindings = <LAYER_ADAPTER(
+        &none,       &none,           &none,           &none,           &none,   &none,                                     &none,        &none,        &none,        &none,        &none,         &none,
+        &bootloader, &rgb_ug RGB_HUI, &rgb_ug RGB_SAI, &rgb_ug RGB_BRI, &bl_inc, &ext_power EP_TOG, &kp LHYP,    &kp RHYP,  &none,        &none,        &none,        &none,        &none,         &bootloader,
+        &sys_reset,  &rgb_ug RGB_HUD, &rgb_ug RGB_SAD, &rgb_ug RGB_BRD, &bl_dec, &out OUT_TOG,      &kp LMEH,    &kp RMEH,  &none,        &none,        &none,        &none,        &none,         &sys_reset,
+        &none,       &rgb_ug RGB_TOG, &ug_reset,       &none,           &none,   &kp C_PWR,         &kp HOME,    &kp PG_UP, &bt BT_SEL 0, &bt BT_SEL 1, &bt BT_SEL 2, &bt BT_SEL 3, &bt BT_SEL 4,  &bt BT_CLR,
+                     LOCK_SYS_LAYER,  &none,           &none,           &none,   &tog L_CMK,        &kp END,     &kp PG_DN, &none,        &none,        &none,        &none,        LOCK_SYS_LAYER
+      )>;
+      sensor-bindings = <&mouscrl SCRLDN SCRLUP &inc_dec_kp C_VOL_UP C_VOL_DN>;
+    };
+  };
+};
