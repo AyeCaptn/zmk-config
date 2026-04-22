@@ -200,6 +200,30 @@
 #define P_LB4_MOU  &none
 #endif
 
+// Definition of optional remaps for keyboards that drop the outer top/home
+// keys from the base layer, like the Totem.
+#ifndef P_LT4_SYM
+#define P_LT4_SYM &none
+#endif
+#ifndef P_LT3_SYM
+#define P_LT3_SYM &none
+#endif
+#ifndef P_RT4_SYS
+#define P_RT4_SYS &none
+#endif
+#ifndef P_RM4_SYS
+#define P_RM4_SYS &none
+#endif
+#ifndef P_RT3_SYM
+#define P_RT3_SYM &kp GT
+#endif
+#ifndef P_RT4_SYM
+#define P_RT4_SYM &kp PIPE
+#endif
+#ifndef P_RM4_SYM
+#define P_RM4_SYM &kp RBKT
+#endif
+
 // Special keys behaviors
 // -----------------------------------------------------------------------------
 // Generic ZMK behaviors are defined on their own `dtsi` file, but some
@@ -520,8 +544,8 @@
       display-name = "Symbols";
       bindings = <LAYER_ADAPTER(
         &none,     &none,     &none,     &none,     &none,     &none,                              &kp QMARK, &kp PLUS,  &kp MINUS, &kp DOT,  &kp FSLH,  &kp BSLH,
-        &none,     &none,     &none,     &none,     &none,     &none,      &kp LHYP,    &kp RHYP,  &kp AMPS,  &kp LT,    &kp EQUAL, &kp GT,   &kp PIPE,  &kp HASH,
-        &none,     &kp LHRM4, &kp LHRM3, &kp LHRM2, &kp LHRM1, &none,      &kp LMEH,    &kp RMEH,  &kp LBKT,  &kp LPAR,  &kp COLON, &kp RPAR, &kp RBKT,  &kp PRCNT,
+        &none,     P_LT4_SYM, P_LT3_SYM, &none,     &none,     &none,      &kp LHYP,    &kp RHYP,  &kp AMPS,  &kp LT,    &kp EQUAL, P_RT3_SYM, P_RT4_SYM, &kp HASH,
+        &none,     &kp LHRM4, &kp LHRM3, &kp LHRM2, &kp LHRM1, &none,      &kp LMEH,    &kp RMEH,  &kp LBKT,  &kp LPAR,  &kp COLON, &kp RPAR, P_RM4_SYM, &kp PRCNT,
         &kp GLOBE, &none,     &none,     &none,     &none,     &none,      &kp HOME,    &kp PG_UP, &kp DLLR,  &kp LBRC,  &kp STAR,  &kp RBRC, &kp CARET, &kp EXCL,
                    &none,     &none,     &none,     &none,     &tog L_SYM, &kp END,     &kp PG_DN, &kp AT,    &kp SPACE, &none,     &none,    &molock
       )>;
@@ -651,8 +675,8 @@
       display-name = "System";
       bindings = <LAYER_ADAPTER(
         &none,       &none,           &none,           &none,           &none,   &none,                                     &none,        &none,        &none,        &none,        &none,         &none,
-        &bootloader, &rgb_ug RGB_HUI, &rgb_ug RGB_SAI, &rgb_ug RGB_BRI, &bl_inc, &ext_power EP_TOG, &kp LHYP,    &kp RHYP,  &none,        &none,        &none,        &none,        &none,         &bootloader,
-        &sys_reset,  &rgb_ug RGB_HUD, &rgb_ug RGB_SAD, &rgb_ug RGB_BRD, &bl_dec, &out OUT_TOG,      &kp LMEH,    &kp RMEH,  &none,        &none,        &none,        &none,        &none,         &sys_reset,
+        &bootloader, &rgb_ug RGB_HUI, &rgb_ug RGB_SAI, &rgb_ug RGB_BRI, &bl_inc, &ext_power EP_TOG, &kp LHYP,    &kp RHYP,  &none,        &none,        &none,        &none,        P_RT4_SYS,    &bootloader,
+        &sys_reset,  &rgb_ug RGB_HUD, &rgb_ug RGB_SAD, &rgb_ug RGB_BRD, &bl_dec, &out OUT_TOG,      &kp LMEH,    &kp RMEH,  &none,        &none,        &none,        &none,        P_RM4_SYS,    &sys_reset,
         &none,       &rgb_ug RGB_TOG, &ug_reset,       &none,           &none,   &kp C_PWR,         &kp HOME,    &kp PG_UP, &bt BT_SEL 0, &bt BT_SEL 1, &bt BT_SEL 2, &bt BT_SEL 3, &bt BT_SEL 4,  &bt BT_CLR,
                      LOCK_SYS_LAYER,  &none,           &none,           &none,   &tog L_CMK,        &kp END,     &kp PG_DN, &none,        &none,        &none,        &none,        LOCK_SYS_LAYER
       )>;
