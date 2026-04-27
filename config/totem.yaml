@@ -1,0 +1,202 @@
+layout: {zmk_keyboard: totem}
+layers:
+  QWERTY:
+  - [Q, W, E, R, T, Y, U, I, O, P]
+  - - {t: A, h: LCTRL}
+    - {t: S, h: LALT}
+    - {t: D, h: LGUI}
+    - {t: F, h: LSHFT}
+    - G
+    - H
+    - {t: J, h: RSHFT}
+    - {t: K, h: RGUI}
+    - {t: L, h: RALT}
+    - {t: ;, h: RCTRL}
+  - - {t: \, h: GLOBE, s: '~'}
+    - {t: Z, h: Buttons}
+    - {t: X, h: Mouse}
+    - C
+    - {t: V, h: Sft+V}
+    - B
+    - N
+    - M
+    - ','
+    - {t: ., h: Functions}
+  - - {t: /, h: Buttons}
+    - {t: '=', h: GLOBE}
+    - '&motg_sys'
+    - {t: BSPC, h: Navigation, s: DEL}
+    - {t: ESC, h: Symbols}
+    - {t: RET, h: Media}
+    - {t: SPACE, h: Numbers}
+    - '&motg_sys'
+  COLEMAK:
+  - [Q, W, F, P, B, J, L, U, Y, ;]
+  - - {t: A, h: LCTRL}
+    - {t: R, h: LALT}
+    - {t: S, h: LGUI}
+    - {t: T, h: LSHFT}
+    - G
+    - M
+    - {t: N, h: RSHFT}
+    - {t: E, h: RGUI}
+    - {t: I, h: RALT}
+    - {t: O, h: RCTRL}
+  - - {t: \, h: GLOBE, s: '~'}
+    - {t: Z, h: Buttons}
+    - {t: X, h: Mouse}
+    - C
+    - D
+    - V
+    - K
+    - H
+    - ','
+    - {t: ., h: Functions}
+  - - {t: /, h: Buttons}
+    - {t: '=', h: GLOBE}
+    - '&motg_sys'
+    - {t: BSPC, h: Navigation, s: DEL}
+    - {t: ESC, h: Symbols}
+    - {t: RET, h: Media}
+    - {t: SPACE, h: Numbers}
+    - '&motg_sys'
+  Navigation:
+  - [Gui+Q, Gui+W, Gui+E, Gui+R, Gui+T, '', HOME, PG DN, PG UP, END]
+  - - {t: Gui+A, h: LCTRL}
+    - {t: Gui+S, h: LALT}
+    - {t: Gui+D, h: LGUI}
+    - {t: Gui+F, h: LSHFT}
+    - '&navcmdg'
+    - ''
+    - LEFT
+    - DOWN
+    - UP
+    - RIGHT
+  - - {t: GLOBE, s: '~'}
+    - '&navcmdz'
+    - '&navcmdx'
+    - '&navcmdc'
+    - '&navcmdv'
+    - Gui+B
+    - ''
+    - Alt+LEFT
+    - Gui+LEFT
+    - Gui+RIGHT
+  - - Alt+RIGHT
+    - ''
+    - ''
+    - {t: Navigation, h: toggle, type: held}
+    - ''
+    - ''
+    - ''
+    - '&molock'
+  Numbers:
+  - ['1', '2', '3', '4', '5', '', '', '', '', '']
+  - ['6', '7', '8', '9', '0', '', RSHFT, RGUI, RALT, RCTRL]
+  - ['=', (, +, '-', ), KP DOT, '', '', '', '']
+  - - ''
+    - GLOBE
+    - '&molock'
+    - {t: BACKSPACE, s: DELETE}
+    - SPACE
+    - ''
+    - {t: Numbers, h: toggle, type: held}
+    - ''
+  Symbols:
+  - ['`', TAB, '', '', '', '&', <, '=', '-', ']']
+  - [LCTRL, LALT, LGUI, LSHFT, '', '[', (, ':', ), '''']
+  - [GLOBE, '', '', '', '', '', $, '{', '*', '}']
+  - - ^
+    - '!'
+    - ''
+    - ''
+    - {t: Symbols, h: toggle, type: held}
+    - '@'
+    - SPACE
+    - '&molock'
+  Media:
+  - [BRI UP, '', '', '', '', '', '', '', '', '']
+  - [BRI DN, PREV, PP, NEXT, '', '', RSHFT, RGUI, RALT, RCTRL]
+  - [MUTE, '', '', '', '', '', '', '', '', '']
+  - - ''
+    - GLOBE
+    - '&molock'
+    - ''
+    - STOP
+    - {t: Media, h: toggle, type: held}
+    - ''
+    - ''
+  Mouse:
+  - ['&mkp MB4', '&mkp MB3', '&mkp MB2', '&mkp MB1', '&mkp MB5', '', Gui+X, Gui+C, Gui+V, Gui+Z]
+  - [LCTRL, LALT, LGUI, LSHFT, '', '', KP 4, KP 2, KP 8, KP 6]
+  - - GLOBE
+    - ''
+    - {t: Mouse, h: toggle, type: held}
+    - ''
+    - ''
+    - ''
+    - ''
+    - ''
+    - ''
+    - ''
+  - ['', '', '', '', '', '&mkp MB2', '&mkp MB1', '&molock']
+  Functions:
+  - [F11, F12, F13, F14, F15, '', '', '', '', '']
+  - [F6, F7, F8, F9, F10, '', RSHFT, RGUI, RALT, RCTRL]
+  - - ''
+    - F1
+    - F2
+    - F3
+    - F4
+    - F5
+    - ''
+    - ''
+    - ''
+    - {t: Functions, h: toggle, type: held}
+  - ['', GLOBE, '&molock', '', '', '', '', '']
+  Buttons:
+  - [Gui+Ctl+LEFT, Gui+~, Gui+`, Gui+Ctl+RIGHT, Gui+Ctl+DOWN, Gui+Ctl+DOWN, Gui+Ctl+LEFT, Gui+~, Gui+`, Gui+Ctl+RIGHT]
+  - [LCTRL, LALT, LGUI, LSHFT, AC DESKTOP SHOW ALL WINDOWS, AC DESKTOP SHOW ALL WINDOWS, RSHFT, RGUI, RALT, RCTRL]
+  - - {t: Gui+Sft+Z, h: GLOBE}
+    - {t: '&butundotog', type: held}
+    - Gui+X
+    - Gui+C
+    - Gui+V
+    - AC SEARCH
+    - AC SEARCH
+    - Gui+V
+    - Gui+C
+    - Gui+X
+  - - '&butundotog'
+    - {t: Gui+Sft+Z, h: GLOBE}
+    - '&molock'
+    - ''
+    - ''
+    - ''
+    - ''
+    - '&molock'
+  System:
+  - [RGB HUI, RGB SAI, RGB BRI, '&bl_inc', EP TOG, '', '', '', '', '-']
+  - [RGB HUD, RGB SAD, RGB BRD, '&bl_dec', OUT TOG, '', '', '', '', '''']
+  - - ''
+    - RGB TOG
+    - '&ug_reset'
+    - ''
+    - ''
+    - PWR
+    - {t: BT, h: '0'}
+    - {t: BT, h: '1'}
+    - {t: BT, h: '2'}
+    - {t: BT, h: '3'}
+  - - {t: BT, h: '4'}
+    - BT CLR
+    - '&syslocktog'
+    - ''
+    - {t: COLEMAK, h: toggle}
+    - ''
+    - ''
+    - '&syslocktog'
+combos:
+- p: [13, 16]
+  k: '&caps_word'
+  l: [QWERTY, COLEMAK]
