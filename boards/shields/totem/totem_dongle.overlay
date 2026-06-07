@@ -1,0 +1,27 @@
+/*
+ * Copyright (c) 2024 The ZMK Contributors
+ * SPDX-License-Identifier: MIT
+ */
+
+#include "totem.dtsi"
+
+/ {
+    chosen {
+        zmk,kscan = &kscan_dongle;
+    };
+};
+
+// The dongle has no physical key matrix — override kscan with a mock/dummy
+// so ZMK builds without a real matrix. Peripherals handle their own scanning.
+&kscan0 {
+    status = "disabled";
+};
+
+/ {
+    kscan_dongle: kscan_dongle {
+        compatible = "zmk,kscan-mock";
+        columns = <0>;
+        rows = <0>;
+        events = <0>;
+    };
+};
