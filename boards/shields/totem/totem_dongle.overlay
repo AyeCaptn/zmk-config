@@ -7,11 +7,12 @@
 
 / {
     chosen {
-        zmk,kscan = &kscan_dongle;
+        zmk,kscan = &mock_kscan;
         zmk,matrix_transform = &default_transform;
     };
 
-    // Minimal matrix transform matching the totem layout (required for keymap to compile)
+    // Matrix transform copied from totem.dtsi — maps peripheral key events
+    // to the correct positions in the keymap.
     default_transform: keymap_transform_0 {
         compatible = "zmk,matrix-transform";
         columns = <10>;
@@ -24,12 +25,12 @@
         >;
     };
 
-    // The dongle has no physical key matrix. Use a mock kscan so ZMK builds
-    // without GPIO scanning — all key events come from BLE peripherals.
-    kscan_dongle: kscan_dongle {
+    // The dongle has no physical keys — mock kscan per ZMK dongle docs.
+    mock_kscan: mock_kscan_0 {
         compatible = "zmk,kscan-mock";
-        columns = <1>;
+        columns = <0>;
         rows = <0>;
-        events = <>;
+        events = <0>;
     };
 };
+

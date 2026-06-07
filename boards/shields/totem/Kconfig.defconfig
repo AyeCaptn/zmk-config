@@ -5,8 +5,11 @@ if SHIELD_TOTEM_LEFT
 
 config ZMK_KEYBOARD_NAME
     default "TOTEM"
-    
+
 config ZMK_SPLIT_ROLE_CENTRAL
+    default y
+
+config ZMK_SPLIT
     default y
 
 endif
@@ -19,9 +22,23 @@ config ZMK_KEYBOARD_NAME
 config ZMK_SPLIT_ROLE_CENTRAL
     default y
 
+config ZMK_SPLIT
+    default y
+
+# 2 peripherals (left + right halves)
+config ZMK_SPLIT_BLE_CENTRAL_PERIPHERALS
+    default 2
+
+# 2 peripherals + 5 BT profiles = 7; round up to 7
+config BT_MAX_CONN
+    default 7
+
+config BT_MAX_PAIRED
+    default 7
+
 endif
 
-if SHIELD_TOTEM_LEFT || SHIELD_TOTEM_RIGHT || SHIELD_TOTEM_DONGLE
+if SHIELD_TOTEM_RIGHT
 
 config ZMK_SPLIT
     default y
