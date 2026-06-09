@@ -6,8 +6,8 @@ manifest:
       url-base: https://github.com/zmkfirmware
     - name: dhruvinsh
       url-base: https://github.com/dhruvinsh
-    - name: janpfischer
-      url-base: https://github.com/janpfischer
+    - name: carrefinho
+      url-base: https://github.com/carrefinho
   projects:
     - name: zephyr
       remote: zmkfirmware
@@ -38,8 +38,8 @@ manifest:
       revision: mousemove-molock
       clone-depth: 1
       import: app/west.yml
-    - name: zmk-dongle-screen
-      remote: janpfischer
+    - name: prospector-zmk-module
+      remote: carrefinho
       revision: main
   self:
     path: config

@@ -1,10 +1,10 @@
 if(CONFIG_SHIELD_TOTEM_DONGLE)
-  # Compatibility shim: zmk-dongle-screen (YADS) includes <zmk/split/central.h>,
-  # which was introduced in ZMK mainline 0.3.0 as a unified split-transport API.
-  # The Townk mousemove-molock fork predates this and only has the older path
-  # <zmk/split/bluetooth/central.h> with slightly different symbol names.
+  # Compatibility shim: the Prospector ZMK module calls
+  # zmk_keymap_layer_index_to_id(), which was added in ZMK v0.3.0 mainline but
+  # is absent in the Townk mousemove-molock fork. In the older API, layer index
+  # and layer ID are identical, so the shim is a trivial identity function.
   #
-  # We inject our shim directory BEFORE ZMK's include path so the compiler
-  # finds our bridging header instead of hitting a missing-file error.
-  include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/include)
+  # Added directly to the app target so it ends up in app/libapp.a alongside
+  # keymap.c, ensuring the linker resolves the symbol from prospector_adapter.a.
+  target_sources(app PRIVATE ${CMAKE_CURRENT_LIST_DIR}/prospector_compat.c)
 endif()
