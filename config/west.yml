@@ -1,11 +1,7 @@
 manifest:
   remotes:
-    - name: zmkfirmware-personal
-      url-base: https://github.com/Townk
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
-    - name: dhruvinsh
-      url-base: https://github.com/dhruvinsh
     - name: janpfischer
       url-base: https://github.com/janpfischer
   projects:
@@ -34,8 +30,8 @@ manifest:
           - edtt
           - trusted-firmware-m
     - name: zmk
-      remote: zmkfirmware-personal
-      revision: mousemove-molock
+      remote: zmkfirmware
+      revision: v0.3.0
       clone-depth: 1
       import: app/west.yml
     - name: zmk-dongle-screen
